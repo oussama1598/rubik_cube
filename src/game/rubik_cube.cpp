@@ -1,6 +1,8 @@
 #include "rubik_cube.h"
 
-Rubik_Cube::Rubik_Cube() {
+const float EPS = 0.0001f;
+
+Rubik_Cube::Rubik_Cube(Rubik *rubik) : _rubik(rubik) {
     _init_game_engine();
     _init_game_scene();
     _init_cube();
@@ -21,6 +23,15 @@ void Rubik_Cube::_init_game_engine() {
                     "/home/red-scule/Desktop/projects/cpp_projects/rubik_cube/src/3d_engine/shaders/vertex.glsl",
                     "/home/red-scule/Desktop/projects/cpp_projects/rubik_cube/src/3d_engine/shaders/fragment.glsl"
             )
+    );
+
+    _game_engine->add_material(
+            "selected",
+            new Material{
+                    glm::vec3{0.f},
+                    glm::vec3{1.f, 1.f, 0.f},
+                    glm::vec3{0.f}
+            }
     );
 
     _game_engine->add_material(
@@ -99,7 +110,7 @@ void Rubik_Cube::_init_game_scene() {
     _game_scene = new Scene();
 
     _game_scene->add_camera(
-            new Camera(glm::vec3{0, 0, 2}, {1000, 800})
+            new Camera(glm::vec3{0, 0, 8}, {1000, 800})
     );
 
     _game_engine->add_scene(_game_scene);
@@ -108,7 +119,7 @@ void Rubik_Cube::_init_game_scene() {
 void Rubik_Cube::_init_cube() {
     Mesh *plane_mesh = new Plane();
 
-    std::map<std::string, Material *> cubie_materials{
+    std::map < std::string, Material * > cubie_materials{
             {"orange", _game_engine->get_material("orange")}, // LEFT
             {"red",    _game_engine->get_material("red")},// RIGHT
             {"white",  _game_engine->get_material("white")},// TOP
@@ -117,21 +128,44 @@ void Rubik_Cube::_init_cube() {
             {"blue",   _game_engine->get_material("blue")}// BACK
     };
 
-    for (int x = -1; x <= 1; ++x)
-        for (int y = -1; y <= 1; ++y)
-            for (int z = -1; z <= 1; ++z) {
-                Cubie *cubie = new Cubie(
-                        {x, y, z},
-                        cubie_materials
-                );
+    for (auto *cubie_data: _rubik->get_cubies()) {
+        glm::vec3 position{cubie_data->get_position()};
 
-                for (Object *face: cubie->get_faces()) {
-                    face->set_shader(_game_engine->get_shader("main_shader"));
-                    face->set_mesh(plane_mesh);
+        Cubie *cubie = new Cubie(
+                position
+        );
 
-                    _game_scene->add_object(face);
-                }
+        for (auto *face_data: cubie_data->get_faces()) {
+            Object *face = new Object();
+            glm::vec3 face_normal{face_data->get_normal()};
+
+            GLdouble rot =
+                    acos(glm::dot(face_data->get_normal(), face_data->get_default_normal())) *
+                    180 / M_PI;
+            glm::vec3 axis = glm::cross(face_data->get_normal(), face_data->get_default_normal());
+
+            face->translate(position);
+            face->translate(face_normal);
+
+            if (glm::dot(axis, axis) > EPS) {
+                face->rotate(rot, axis);
             }
+
+            face->scale(glm::vec3{face_data->get_scale()});
+
+            face->set_material(cubie_materials.at(face_data->get_color()));
+            face->set_shader(_game_engine->get_shader("main_shader"));
+            face->set_mesh(plane_mesh);
+
+            if (cubie_data->highlight == 1) {
+                face->set_material(_game_engine->get_material("selected"));
+            }
+
+            cubie->add_face(face);
+
+            _game_scene->add_object(face);
+        }
+    }
 }
 
 void Rubik_Cube::_handle_keyboard_input() {

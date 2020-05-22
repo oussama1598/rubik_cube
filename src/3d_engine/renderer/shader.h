@@ -31,5 +31,7 @@ public:
     void set_uniform_matrix_4_fv(const std::string &name, glm::mat4 &matrix);
 
     void set_uniform_3_fv(const std::string &name, glm::vec3 &value);
+
+    void set_uniform_1_i(const std::string &name, int value);
 };
 

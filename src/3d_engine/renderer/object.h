@@ -37,7 +37,9 @@ public:
 
     void move_to(const glm::vec3 &position);
 
-    void rotate(const glm::vec3 &rotation);
+    void translate(const glm::vec3 &direction);
+
+    void rotate(float angle, const glm::vec3 &axis);
 
     void scale(const glm::vec3 &scale);
 

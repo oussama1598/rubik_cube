@@ -23,17 +23,18 @@ void Object::move_to(const glm::vec3 &position) {
     _calculate_model_matrix();
 }
 
-void Object::rotate(const glm::vec3 &rotation) {
-    _rotation = rotation;
+void Object::translate(const glm::vec3 &direction) {
+    _model_matrix = glm::translate(_model_matrix, direction);
+}
 
-    _calculate_model_matrix();
+void Object::rotate(float angle, const glm::vec3 &axis) {
+    _model_matrix = glm::rotate(_model_matrix, glm::radians(angle), axis);
 }
 
 void Object::scale(const glm::vec3 &scale) {
-    _scale = scale;
-
-    _calculate_model_matrix();
+    _model_matrix = glm::scale(_model_matrix, scale);
 }
+
 
 void Object::render() {
     _shader->set_uniform_matrix_4_fv("model_matrix", _model_matrix);

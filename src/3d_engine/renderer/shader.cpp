@@ -129,3 +129,12 @@ void Shader::set_uniform_3_fv(const std::string &name, glm::vec3 &value) {
     );
     unbind();
 }
+
+void Shader::set_uniform_1_i(const std::string &name, int value) {
+    bind();
+    glUniform1i(
+            glGetUniformLocation(_id, name.c_str()),
+            value
+    );
+    unbind();
+}

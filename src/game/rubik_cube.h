@@ -3,6 +3,8 @@
 #include "3d_engine/core/engine.h"
 #include "3d_engine/primitives/plane.h"
 
+#include "rubik_engine/rubik.h"
+
 #include "cubie.h"
 
 class Rubik_Cube {
@@ -10,6 +12,7 @@ class Rubik_Cube {
 private:
     Engine *_game_engine{nullptr};
     Scene *_game_scene{nullptr};
+    Rubik *_rubik;
 
 private:
     void _init_game_engine();
@@ -24,7 +27,7 @@ private:
 
 public:
 
-    Rubik_Cube();
+    Rubik_Cube(Rubik *rubik);
 
     ~Rubik_Cube();
 
