@@ -28,12 +28,11 @@ conan_cmake_run(
 set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
-
 add_compile_options(-Wall -Werror -Wextra -fPIC)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_options(-DDEBUG)
 endif()
 
-#add_subdirectory(test)
+add_subdirectory(test)
 add_subdirectory(src)

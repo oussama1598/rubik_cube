@@ -11,7 +11,6 @@ class Face_Data {
 private:
     float _scale{.95f};
     glm::vec3 _normal;
-    glm::mat4 _transform{1.f};
     glm::vec3 _default_normal;
     std::string _color{""};
 

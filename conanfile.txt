@@ -3,3 +3,16 @@ Catch2/2.9.1@catchorg/stable
 glm/0.9.9.8
 glfw/3.3.2@bincrafters/stable
 glew/2.1.0@bincrafters/stable
+opencv/4.1.1@conan/stable
+bzip2/1.0.8@conan/stable
+glib/2.64.0@bincrafters/stable
+
+[options]
+opencv:shared=True
+
+[generators]
+cmake
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my "bin" folder
+lib, *.dylib* -> ./bin # Copies all dylib files from packages lib folder to my "bin" folder

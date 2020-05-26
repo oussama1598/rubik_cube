@@ -26,15 +26,6 @@ void Rubik_Cube::_init_game_engine() {
     );
 
     _game_engine->add_material(
-            "selected",
-            new Material{
-                    glm::vec3{0.f},
-                    glm::vec3{1.f, 1.f, 0.f},
-                    glm::vec3{0.f}
-            }
-    );
-
-    _game_engine->add_material(
             "orange",
             new Material{
                     glm::vec3{0.f},
@@ -119,7 +110,7 @@ void Rubik_Cube::_init_game_scene() {
 void Rubik_Cube::_init_cube() {
     Mesh *plane_mesh = new Plane();
 
-    std::map < std::string, Material * > cubie_materials{
+    std::map<std::string, Material *> cubie_materials{
             {"orange", _game_engine->get_material("orange")}, // LEFT
             {"red",    _game_engine->get_material("red")},// RIGHT
             {"white",  _game_engine->get_material("white")},// TOP
@@ -153,18 +144,41 @@ void Rubik_Cube::_init_cube() {
 
             face->scale(glm::vec3{face_data->get_scale()});
 
-            face->set_material(cubie_materials.at(face_data->get_color()));
+            face->set_material(cubie_materials.at(_colors.at(face_data->get_color())));
             face->set_shader(_game_engine->get_shader("main_shader"));
             face->set_mesh(plane_mesh);
-
-            if (cubie_data->highlight == 1) {
-                face->set_material(_game_engine->get_material("selected"));
-            }
 
             cubie->add_face(face);
 
             _game_scene->add_object(face);
+
+            _linked_faces.insert({{cubie_data, face_data}, face});
         }
+    }
+}
+
+void Rubik_Cube::_apply_changes() {
+    for (auto &face: _linked_faces) {
+        Cubie_Data *cubie_data = face.first.first;
+        Face_Data *face_data = face.first.second;
+        Object *face_object = face.second;
+
+        face_object->reset_transform();
+        glm::vec3 face_normal{face_data->get_normal()};
+
+        GLdouble rot =
+                acos(glm::dot(face_data->get_normal(), face_data->get_default_normal())) *
+                180 / M_PI;
+        glm::vec3 axis = glm::cross(face_data->get_normal(), face_data->get_default_normal());
+
+        face_object->translate(cubie_data->get_position());
+        face_object->translate(face_normal);
+
+        if (glm::dot(axis, axis) > EPS) {
+            face_object->rotate(rot, axis);
+        }
+
+        face_object->scale(glm::vec3{face_data->get_scale()});
     }
 }
 
@@ -200,6 +214,12 @@ void Rubik_Cube::_handle_keyboard_input() {
 
         camera->translate(direction);
     }
+
+    if (_game_engine->keyboard_controller->is_key_pressed(GLFW_KEY_F)) {
+        _rubik->apply_moves("F");
+
+        _apply_changes();
+    }
 }
 
 void Rubik_Cube::_handler_mouse_input() {
@@ -216,7 +236,6 @@ void Rubik_Cube::_handler_mouse_input() {
 
     }
 }
-
 
 void Rubik_Cube::start() {
     while (_game_engine->running()) {

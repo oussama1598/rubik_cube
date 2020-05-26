@@ -13,17 +13,10 @@ private:
     Material *_material{nullptr};
     Mesh *_mesh{nullptr};
 
-    glm::mat4 _model_matrix;
-
-    glm::vec3 _position{0.f};
-    glm::vec3 _rotation{0.f};
-    glm::vec3 _scale{1.f};
-
-private:
-    void _calculate_model_matrix();
+    glm::mat4 _model_matrix{1.f};
 
 public:
-    Object();
+    Object() = default;
 
     inline void set_shader(Shader *shader) { _shader = shader; }
 
@@ -35,7 +28,7 @@ public:
 
     inline void set_mesh(Mesh *mesh) { _mesh = mesh; }
 
-    void move_to(const glm::vec3 &position);
+    void reset_transform();
 
     void translate(const glm::vec3 &direction);
 
