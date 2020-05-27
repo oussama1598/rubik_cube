@@ -1,7 +1,10 @@
 #pragma once
 
+#include "opencv2/opencv.hpp"
 
-class rubik_detector {
+class Rubik_Detector {
 
+public:
+    Rubik_Detector();
 };
 

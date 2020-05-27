@@ -1,6 +1,6 @@
 #include "face_data.h"
 
-Face_Data::Face_Data(glm::vec3 normal, std::string color) : _normal(normal * .5f * _scale),
+Face_Data::Face_Data(glm::vec3 normal, char color) : _normal(normal * .5f * _scale),
                                                             _default_normal({0.f, 0.f, 1.f}),
                                                             _color(color) {}
 

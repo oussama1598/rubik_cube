@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <array>
 
 #include <bits/stdc++.h>
 #include <boost/algorithm/string.hpp>
@@ -36,8 +37,8 @@ private:
     };
 
 private:
-    void _sort_faces(std::vector<std::pair<std::string, glm::vec3>> &faces_vector,
-                     const std::vector<std::string> axis_order = {"x", "y", "z"},
+    void _sort_faces(std::vector<std::pair<char, glm::vec3>> &faces_vector,
+                     std::array<char, 3> axis_order = {'x', 'y', 'z'},
                      const glm::vec3 &direction = {1.f, 1.f, 1.f});
 
 public:

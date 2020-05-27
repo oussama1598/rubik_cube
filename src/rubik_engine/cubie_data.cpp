@@ -1,27 +1,32 @@
 #include "cubie_data.h"
 
-const std::vector<glm::vec3> Cubie_Data::faces_normals{
-        {1.f,  0.f,  0.f}, // RIGHT
-        {-1.f, 0.f,  0.f}, // LEFT
-        {0.f,  1.f,  0.f}, // UP
-        {0.f,  -1.f, 0.f}, // DOWN
-        {0.f,  0.f,  1.f}, // FRONT
-        {0.f,  0.f,  -1.f} // BACK
+const std::array<glm::vec3, 6> Cubie_Data::faces_normals{
+        {
+                {1.f, 0.f, 0.f}, // RIGHT
+                {-1.f, 0.f, 0.f}, // LEFT
+                {0.f, 1.f, 0.f}, // UP
+                {0.f, -1.f, 0.f}, // DOWN
+                {0.f, 0.f, 1.f}, // FRONT
+                {0.f, 0.f, -1.f} // BACK
+        }
 };
 
-const std::vector<std::string> Cubie_Data::faces_colors{
-        "R", // RIGHT
-        "L", // LEFT
-        "U", // UP
-        "D", // DOWN
-        "F", // FRONT
-        "B" // BACK
-//        "red", // RIGHT
-//        "orange", // LEFT
-//        "white", // UP
-//        "yellow", // DOWN
-//        "green", // FRONT
-//        "blue" // BACK
+const std::array<char, 6> Cubie_Data::faces_colors{
+        'R', // RIGHT
+        'L', // LEFT
+        'U', // UP
+        'D', // DOWN
+        'F', // FRONT
+        'B' // BACK
+};
+
+const std::map<char, int> Cubie_Data::index_to_normals{
+        {'R', 0},
+        {'L', 1},
+        {'U', 2},
+        {'D', 3},
+        {'F', 4},
+        {'B', 5}
 };
 
 Cubie_Data::Cubie_Data(glm::vec3 position) : _position(position) {
@@ -42,16 +47,7 @@ void Cubie_Data::rotate(const glm::vec3 &axis) {
     }
 }
 
-std::string Cubie_Data::get_face(const std::string &direction) {
-    std::map<std::string, int> index_to_normals{
-            {"R", 0},
-            {"L", 1},
-            {"U", 2},
-            {"D", 3},
-            {"F", 4},
-            {"B", 5}
-    };
-
+char Cubie_Data::get_face(char direction) {
     glm::vec3 normal = faces_normals[index_to_normals.at(direction)] * .5f;
 
     for (Face_Data *face: _faces) {
@@ -63,5 +59,5 @@ std::string Cubie_Data::get_face(const std::string &direction) {
         }
     }
 
-    return "";
+    return 0;
 }

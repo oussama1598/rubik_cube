@@ -14,30 +14,27 @@ Rubik::~Rubik() {
     }
 }
 
-void Rubik::_sort_faces(std::vector<std::pair<std::string, glm::vec3>> &faces_vector,
-                        const std::vector<std::string> axis_order, const glm::vec3 &direction) {
-
-    for (std::string axe: axis_order) {
-
-        if (axe == "x")
+void Rubik::_sort_faces(std::vector<std::pair<char, glm::vec3>> &faces_vector,
+                        const std::array<char, 3> axis_order, const glm::vec3 &direction) {
+    for (char axe: axis_order) {
+        if (axe == 'x')
             std::sort(faces_vector.begin(), faces_vector.end(),
-                      [direction](const std::pair<std::string, glm::vec3> &lhs,
-                                  const std::pair<std::string, glm::vec3> &rhs) {
+                      [direction](const std::pair<char, glm::vec3> &lhs,
+                                  const std::pair<char, glm::vec3> &rhs) {
                           return direction.x * lhs.second.x < direction.x * rhs.second.x;
                       });
 
-
-        if (axe == "y")
+        if (axe == 'y')
             std::sort(faces_vector.begin(), faces_vector.end(),
-                      [direction](const std::pair<std::string, glm::vec3> &lhs,
-                                  const std::pair<std::string, glm::vec3> &rhs) {
+                      [direction](const std::pair<char, glm::vec3> &lhs,
+                                  const std::pair<char, glm::vec3> &rhs) {
                           return direction.y * lhs.second.y > direction.y * rhs.second.y;
                       });
 
-        if (axe == "z")
+        if (axe == 'z')
             std::sort(faces_vector.begin(), faces_vector.end(),
-                      [direction](const std::pair<std::string, glm::vec3> &lhs,
-                                  const std::pair<std::string, glm::vec3> &rhs) {
+                      [direction](const std::pair<char, glm::vec3> &lhs,
+                                  const std::pair<char, glm::vec3> &rhs) {
                           return direction.z * lhs.second.z < direction.z * rhs.second.z;
                       });
     }
@@ -88,63 +85,64 @@ void Rubik::apply_moves(const std::string &moves) {
 std::string Rubik::to_string() {
     std::stringstream cube;
 
-    std::map<std::string, std::vector<std::pair<std::string, glm::vec3 >>> faces{
-            {"U", {}},
-            {"D", {}},
-            {"F", {}},
-            {"B", {}},
-            {"L", {}},
-            {"R", {}}
+    std::map<char, std::vector<std::pair<char, glm::vec3 >>> faces{
+            {'U', {}},
+            {'D', {}},
+            {'F', {}},
+            {'B', {}},
+            {'L', {}},
+            {'R', {}}
     };
 
     for (Cubie_Data *cubie: _cubies) {
         if (cubie->get_position().y == 1) {
-            faces.at("U").push_back({cubie->get_face("U"), cubie->get_position()});
+            faces.at('U').push_back({cubie->get_face('U'), cubie->get_position()});
         }
 
         if (cubie->get_position().y == -1) {
-            faces.at("D").push_back({cubie->get_face("D"), cubie->get_position()});
+            faces.at('D').push_back({cubie->get_face('D'), cubie->get_position()});
         }
 
         if (cubie->get_position().z == 1) {
-            faces.at("F").push_back({cubie->get_face("F"), cubie->get_position()});
+            faces.at('F').push_back({cubie->get_face('F'), cubie->get_position()});
         }
 
         if (cubie->get_position().z == -1) {
-            faces.at("B").push_back({cubie->get_face("B"), cubie->get_position()});
+            faces.at('B').push_back({cubie->get_face('B'), cubie->get_position()});
         }
 
         if (cubie->get_position().x == -1) {
-            faces.at("L").push_back({cubie->get_face("L"), cubie->get_position()});
+            faces.at('L').push_back({cubie->get_face('L'), cubie->get_position()});
         }
 
         if (cubie->get_position().x == 1) {
-            faces.at("R").push_back({cubie->get_face("R"), cubie->get_position()});
+            faces.at('R').push_back({cubie->get_face('R'), cubie->get_position()});
         }
     }
 
-    for (std::string side: {"U", "R", "F", "D", "L", "B"}) {
+    for (char side: {'U', 'R', 'F', 'D', 'L', 'B'}) {
         auto &side_faces = faces.at(side);
 
         glm::vec3 direction{1.f, 1.f, 1.f};
-        std::vector<std::string> axis_order{"x", "y", "z"};
+        std::array<char, 3> axis_order{'x', 'y', 'z'};
 
-        if (side == "R") {
-            direction.z = -1.f;
-            axis_order = {"z", "x", "y"};
-        }
-
-        if (side == "D") {
-            direction.z = -1.f;
-            axis_order = {"x", "z", "y"};
-        }
-
-        if (side == "B") {
-            direction.x = -1.f;
-        }
-
-        if (side == "L") {
-            axis_order = {"z", "x", "y"};
+        switch (side) {
+            case 'R':
+                direction.z = -1.f;
+                axis_order = {'z', 'x', 'y'};
+                break;
+            case 'D':
+                direction.z = -1.f;
+                axis_order = {'x', 'z', 'y'};
+                break;
+            case 'B':
+                direction.x = -1.f;
+                break;
+            case 'L':
+                axis_order = {'z', 'x', 'y'};
+                break;
+            default:
+                break;
         }
 
         _sort_faces(side_faces, axis_order, direction);
@@ -153,19 +151,6 @@ std::string Rubik::to_string() {
             cube << face.first;
         }
     }
-
-//    std::map<std::string, std::string> _colors{
-//            {"R", "red"}, // RIGHT
-//            {"L", "orange"},// LEFT
-//            {"U", "white"},// UP
-//            {"D", "yellow"},// DOWN
-//            {"F", "green"},// FRONT
-//            {"B", "blue"}// BACK
-//    };
-//
-//    for (auto &face: faces.at("D")) {
-//        cube << _colors.at(face.first) << " ";
-//    }
 
     return cube.str();
 }

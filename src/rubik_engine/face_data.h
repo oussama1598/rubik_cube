@@ -12,12 +12,12 @@ private:
     float _scale{.95f};
     glm::vec3 _normal;
     glm::vec3 _default_normal;
-    std::string _color{""};
+    char _color{};
 
 public:
-    Face_Data(glm::vec3 normal, std::string color);
+    Face_Data(glm::vec3 normal, char color);
 
-    inline float get_scale() const { return _scale; }
+    [[nodiscard]] inline float get_scale() const { return _scale; }
 
     inline glm::vec3 get_normal() {
         return _normal;
@@ -25,7 +25,7 @@ public:
 
     inline glm::vec3 &get_default_normal() { return _default_normal; }
 
-    inline std::string &get_color() { return _color; }
+    inline char get_color() const { return _color; }
 
     void rotate(float angle, const glm::vec3 &axis);
 };

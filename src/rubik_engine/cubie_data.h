@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <array>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -12,11 +13,12 @@
 class Cubie_Data {
 private:
     glm::vec3 _position{0.f};
-    std::vector<Face_Data *> _faces;
+    std::vector<Face_Data *> _faces{};
 
 public:
-    static const std::vector<glm::vec3> faces_normals;
-    static const std::vector<std::string> faces_colors;
+    static const std::array<glm::vec3, 6> faces_normals;
+    static const std::array<char, 6> faces_colors;
+    static const std::map<char, int> index_to_normals;
 
 public:
     explicit Cubie_Data(glm::vec3 position);
@@ -27,6 +29,6 @@ public:
 
     void rotate(const glm::vec3 &axis);
 
-    std::string get_face(const std::string &direction);
+    char get_face(char direction);
 };
 
