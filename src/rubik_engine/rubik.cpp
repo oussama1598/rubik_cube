@@ -40,18 +40,18 @@ void Rubik::_sort_faces(std::vector<std::pair<char, glm::vec3>> &faces_vector,
     }
 }
 
-void Rubik::rotate(float direction, float side, char axe) {
+void Rubik::rotate(const Move &move) {
     for (auto *cubie: _cubies) {
-        if (axe == 'x' && cubie->get_position().x == side) {
-            cubie->rotate({direction * 1.f, 0.f, 0.f});
+        if (move.axe == 'x' && (move.all_cubies || cubie->get_position().x == move.side)) {
+            cubie->rotate({move.direction * 1.f, 0.f, 0.f});
         }
 
-        if (axe == 'y' && cubie->get_position().y == side) {
-            cubie->rotate({0.f, direction * 1.f, 0.f});
+        if (move.axe == 'y' && (move.all_cubies || cubie->get_position().y == move.side)) {
+            cubie->rotate({0.f, move.direction * 1.f, 0.f});
         }
 
-        if (axe == 'z' && cubie->get_position().z == side) {
-            cubie->rotate({0.f, 0.f, direction * 1.f});
+        if (move.axe == 'z' && (move.all_cubies || cubie->get_position().z == move.side)) {
+            cubie->rotate({0.f, 0.f, move.direction * 1.f});
         }
     }
 }
@@ -75,9 +75,7 @@ void Rubik::apply_moves(const std::string &moves) {
         }
 
         for (int i = 0; i < repeats; ++i) {
-            Move move_data = _moves.at(move);
-
-            rotate(move_data.direction, move_data.side, move_data.axe);
+            rotate(_moves.at(move));
         }
     }
 }
@@ -120,7 +118,7 @@ std::string Rubik::to_string() {
         }
     }
 
-    for (char side: {'U', 'R', 'F', 'D', 'L', 'B'}) {
+    for (char side: {'U', 'L', 'F', 'R', 'B', 'D'}) {
         auto &side_faces = faces.at(side);
 
         glm::vec3 direction{1.f, 1.f, 1.f};

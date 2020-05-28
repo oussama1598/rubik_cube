@@ -16,11 +16,13 @@ private:
         float direction;
         float side;
         char axe;
+        bool all_cubies{false};
     };
 
     std::vector<Cubie_Data *> _cubies;
 
     std::map<std::string, Move> _moves{
+            // simple moves
             {"U",  {-1.f, 1.f,  'y'}},
             {"D",  {1.f,  -1.f, 'y'}},
             {"L",  {1.f,  -1.f, 'x'}},
@@ -28,12 +30,23 @@ private:
             {"F",  {-1.f, 1.f,  'z'}},
             {"B",  {1.f,  -1.f, 'z'}},
 
+            // reverse simple moves
             {"U'", {1.f,  1.f,  'y'}},
             {"D'", {-1.f, -1.f, 'y'}},
             {"L'", {-1.f, -1.f, 'x'}},
             {"R'", {1.f,  1.f,  'x'}},
             {"F'", {1.f,  1.f,  'z'}},
             {"B'", {-1.f, -1.f, 'z'}},
+
+            // complex moves
+            {"x",  {-1.f,  1.f,  'x', true}},
+            {"y",  {-1.f,  1.f,  'y', true}},
+            {"z",  {-1.f,  1.f,  'z', true}},
+
+            // reverse complex moves
+            {"x'",  {1.f,  1.f,  'x', true}},
+            {"y'",  {1.f,  1.f,  'y', true}},
+            {"z'",  {1.f,  1.f,  'z', true}},
     };
 
 private:
@@ -49,7 +62,7 @@ public:
 
     inline std::vector<Cubie_Data *> &get_cubies() { return _cubies; }
 
-    void rotate(float direction, float side, char axe);
+    void rotate(const Move &move);
 
     void apply_moves(const std::string &moves);
 

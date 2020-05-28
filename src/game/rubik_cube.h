@@ -16,13 +16,13 @@ private:
     Scene *_game_scene{nullptr};
     Rubik *_rubik;
 
-    std::map<std::string, std::string> _colors{
-            {"R", "red"}, // RIGHT
-            {"L", "orange"},// LEFT
-            {"U", "white"},// UP
-            {"D", "yellow"},// DOWN
-            {"F", "green"},// FRONT
-            {"B", "blue"}// BACK
+    std::map<char, std::string> _colors{
+            {'R', "red"}, // RIGHT
+            {'L', "orange"},// LEFT
+            {'U', "white"},// UP
+            {'D', "yellow"},// DOWN
+            {'F', "green"},// FRONT
+            {'B', "blue"}// BACK
     };
 
     std::map<std::pair<Cubie_Data *, Face_Data *>, Object *> _linked_faces;
