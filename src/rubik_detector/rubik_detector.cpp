@@ -4,37 +4,41 @@ Rubik_Detector::Rubik_Detector() {
     _image = cv::imread(
             "/home/red-scule/Desktop/projects/cpp_projects/rubik_cube/assets/2.jpg", 1);
 
-    int width{352};
-    int height{240};
-
     auto cap = cv::VideoCapture(0);
 
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
-
-    cv::namedWindow("Fig", cv::WINDOW_NORMAL);
-    cv::resizeWindow("Fig", width * 2, height * 2);
-
-    // video saving
-//    cv::VideoWriter video("outcpp.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 24,
-//                          cv::Size(cap.get(cv::CAP_PROP_FRAME_WIDTH),
-//                                   cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
-
-    while (cv::waitKey(1) != 113) {
+    while (viewer.is_running()) {
         cap >> _image;
 
         _analyze();
         _draw_cube_face();
 
-        cv::imshow("Fig", _image);
+        if (_windows_states.at("output")) {
+            cv::resize(_image, _image, cv::Size(), .6f, .6f);
+            viewer.add_frame("Output", _image);
+        }
 
-//        video.write(_image);
+        if (_windows_states.at("gray")) {
+            cv::cvtColor(_gray, _gray, cv::COLOR_GRAY2RGB);
+            cv::resize(_gray, _gray, cv::Size(), .6f, .6f);
+            viewer.add_frame("Gray", _gray);
+        }
 
+        if (_windows_states.at("no_noise")) {
+            cv::cvtColor(_no_noise, _no_noise, cv::COLOR_GRAY2RGB);
+            cv::resize(_no_noise, _no_noise, cv::Size(), .6f, .6f);
+            viewer.add_frame("No noise", _no_noise);
+        }
+
+        if (_windows_states.at("canny")) {
+            cv::cvtColor(_canny, _canny, cv::COLOR_GRAY2RGB);
+            cv::resize(_canny, _canny, cv::Size(), .6f, .6f);
+            viewer.add_frame("Canny", _canny);
+        }
+
+        viewer.render();
     }
 
-    // Clean up window and erase it
     cap.release();
-    cv::destroyAllWindows();
 }
 
 std::vector<Custom_Contour>
@@ -89,7 +93,6 @@ void Rubik_Detector::_calculate_median_square_area(std::vector<Custom_Contour> &
         int middle_square_index = (int) ((2 * num_of_squares) / 3);
 
         _mean_square_area = (int) (total_square_area / num_of_squares);
-        _median_square_area = (int) square_areas[middle_square_index];
         _median_square_width = (int) square_widths[middle_square_index];
     }
 }
@@ -252,20 +255,16 @@ void Rubik_Detector::_analyze() {
     int img_height = _image.rows;
     int img_area = img_width * img_height;
 
-    cv::Mat gray;
-    cv::cvtColor(_image, gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(_image, _gray, cv::COLOR_BGR2GRAY);
 
     // look into changing this
-    cv::Mat no_noise;
-    cv::blur(gray, no_noise, cv::Size(10, 10));
-//    cv::fastNlMeansDenoising(gray, no_noise, 10, 15, 7);
+    cv::blur(_gray, _no_noise, cv::Size(10, 10));
 
-    cv::Mat canny;
-    cv::Canny(no_noise, canny, 5, 10);
+    cv::Canny(_no_noise, _canny, 5, 10);
 
     cv::Mat kernel(3, 3, CV_8UC1, cv::Scalar(1));
     cv::Mat dilated;
-    cv::dilate(canny, dilated, kernel, cv::Point(-1, -1), 4);
+    cv::dilate(_canny, dilated, kernel, cv::Point(-1, -1), 4);
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;

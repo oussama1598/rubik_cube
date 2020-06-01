@@ -2,14 +2,26 @@
 
 #include <opencv2/opencv.hpp>
 #include "custom_contour.h"
+#include "viewer.h"
 
 class Rubik_Detector {
 
 private:
     cv::Mat _image;
 
+    cv::Mat _gray;
+    cv::Mat _no_noise;
+    cv::Mat _canny;
+    std::map<std::string, bool> _windows_states{
+            {"output",   true},
+            {"gray",     false},
+            {"no_noise", false},
+            {"canny",    false}
+    };
+
+    Viewer viewer{&_windows_states};
+
     int _mean_square_area{0};
-    int _median_square_area{0};
     int _median_square_width{0};
 
     int _top{-1};

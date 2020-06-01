@@ -6,6 +6,7 @@ glew/2.1.0@bincrafters/stable
 opencv/4.1.1@conan/stable
 bzip2/1.0.8@conan/stable
 glib/2.64.0@bincrafters/stable
+imgui/1.76
 
 [options]
 opencv:shared=True
