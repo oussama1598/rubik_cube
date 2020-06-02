@@ -1,6 +1,27 @@
 #include "rubik_detector.h"
 
 Rubik_Detector::Rubik_Detector() {
+    // save config if does not exist
+    if (!Utils::file_exists(_config_file)) {
+        _dump_settings();
+    }
+
+    // load config
+    nlohmann::json config = Utils::load_json(_config_file);
+
+    _windows_states = (std::map<std::string, bool>) config["windows_states"];
+    _blur_settings = (std::map<std::string, int>) config["blur_settings"];
+    _canny_settings = (std::map<std::string, int>) config["canny_settings"];
+    _dilated_settings = (std::map<std::string, int>) config["dilated_settings"];
+
+    for (auto &[color, colors]: config["colors"].items()) {
+        nlohmann::json start_color = colors[0];
+        nlohmann::json end_color = colors[1];
+
+        _color_ranges[color].first = cv::Scalar(start_color[0], start_color[1], start_color[2]);
+        _color_ranges[color].second = cv::Scalar(end_color[0], end_color[1], end_color[2]);
+    }
+
     _image = cv::imread(
             "/home/red-scule/Desktop/projects/cpp_projects/rubik_cube/assets/2.jpg", 1);
 
@@ -35,10 +56,38 @@ Rubik_Detector::Rubik_Detector() {
             viewer.add_frame("Canny", _canny);
         }
 
+        if (_windows_states.at("dilated")) {
+            cv::cvtColor(_dilated, _dilated, cv::COLOR_GRAY2RGB);
+            cv::resize(_dilated, _dilated, cv::Size(), .6f, .6f);
+            viewer.add_frame("Dilated", _dilated);
+        }
+
         viewer.render();
+
+        if (_save_settings) {
+            _dump_settings();
+        }
     }
 
     cap.release();
+}
+
+void Rubik_Detector::_dump_settings() {
+    nlohmann::json config;
+
+    config["windows_states"] = _windows_states;
+    config["blur_settings"] = _blur_settings;
+    config["canny_settings"] = _canny_settings;
+    config["dilated_settings"] = _dilated_settings;
+
+    for (auto &color: _color_ranges) {
+        config["colors"][color.first] = {
+                {color.second.first[0],  color.second.first[1],  color.second.first[2]},
+                {color.second.second[0], color.second.second[1], color.second.second[2]},
+        };
+    }
+
+    Utils::save_file(_config_file, config);
 }
 
 std::vector<Custom_Contour>
@@ -258,18 +307,21 @@ void Rubik_Detector::_analyze() {
     cv::cvtColor(_image, _gray, cv::COLOR_BGR2GRAY);
 
     // look into changing this
-    cv::blur(_gray, _no_noise, cv::Size(10, 10));
+    cv::GaussianBlur(_gray, _no_noise,
+                     cv::Size(_blur_settings.at("kernel_x"), _blur_settings.at("kernel_y")),
+                     _blur_settings.at("sigma_x"), _blur_settings.at("sigma_y"));
 
-    cv::Canny(_no_noise, _canny, 5, 10);
+    cv::Canny(_no_noise, _canny, _canny_settings.at("threshold1"),
+              _canny_settings.at("threshold2"));
 
-    cv::Mat kernel(3, 3, CV_8UC1, cv::Scalar(1));
-    cv::Mat dilated;
-    cv::dilate(_canny, dilated, kernel, cv::Point(-1, -1), 4);
+    cv::Mat kernel(_dilated_settings.at("kernel_x"), _dilated_settings.at("kernel_y"), CV_8UC1,
+                   cv::Scalar(1));
+    cv::dilate(_canny, _dilated, kernel, cv::Point(-1, -1), _dilated_settings.at("iterations"));
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
 
-    cv::findContours(dilated, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(_dilated, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<Custom_Contour> candidates;
 
@@ -314,6 +366,12 @@ void Rubik_Detector::_analyze() {
         cv::rectangle(_image, rect.boundingRect(), cv::Scalar(0, 255, 0), 2);
     }
 
+    // Calibration _min/max
+    if (_calibrate_color.empty()) {
+        _min = {INFINITY, INFINITY, INFINITY};
+        _max = {-INFINITY, -INFINITY, -INFINITY};
+    }
+
     // check if we have all the needed squares
     if (_sanity_check_results(candidates)) {
 
@@ -329,6 +387,12 @@ void Rubik_Detector::_analyze() {
             cv::drawContours(mask, conts, 0, 255, -1);
 
             cv::Scalar color = cv::mean(_image, mask);
+
+            if (!_calibrate_color.empty()) {
+                if (color[0] > _max[0] && color[1] > _max[1] && color[2] > _max[2]) _max = color;
+                if (color[0] < _min[0] && color[1] < _min[1] && color[2] < _min[2]) _min = color;
+            }
+
             std::string color_name = _get_color_name(color);
 
             if (color_name.empty()) continue;
@@ -338,19 +402,23 @@ void Rubik_Detector::_analyze() {
             cv::putText(_image, _get_color_name(color), cv::Point(cont.get_cX(), cont.get_cY()),
                         cv::FONT_HERSHEY_PLAIN, .5f, _color_mapping.at(color_name));
         }
+
+        if (!_calibrate_color.empty()) {
+            _color_ranges[_calibrate_color].first = {floor(_min[2]), floor(_min[1]),
+                                                     floor(_min[0])};
+            _color_ranges[_calibrate_color].second = {ceil(_max[2]), ceil(_max[1]), ceil(_max[0])};
+        }
     }
 }
 
 void Rubik_Detector::_draw_cube_face() {
     int size = 20;
 
-    for (int x = 0; x < 3; ++x)
-        for (int y = 0; y < 3; ++y) {
-            std::string color = _data.at("U").at(x * 3 + y);
+    for (int y = 0; y < 3; ++y)
+        for (int x = 0; x < 3; ++x) {
+            std::string color = _data.at("U").at(y * 3 + x);
 
-            std::cout << color << std::endl;
-
-            cv::Rect rect{x * size, y * size, (x + 1) * size, (y + 1) * size};
+            cv::Rect rect{x * size + 5 * (x + 1), y * size + 5 * (y + 1), size, size};
 
             cv::rectangle(
                     _image,

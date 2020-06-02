@@ -7,6 +7,8 @@ opencv/4.1.1@conan/stable
 bzip2/1.0.8@conan/stable
 glib/2.64.0@bincrafters/stable
 imgui/1.76
+soil2/1.20@bincrafters/stable
+nlohmann_json/3.7.3
 
 [options]
 opencv:shared=True

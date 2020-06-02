@@ -1,4 +1,35 @@
+#include <filesystem>
 #include "utils.h"
+
+
+bool Utils::file_exists(const std::string &file_path) {
+    return std::filesystem::exists(file_path);
+}
+
+void Utils::save_file(const std::string &file_path, nlohmann::json &json) {
+    std::ofstream file(file_path);
+
+    if (file.is_open()) {
+        file << json.dump(3);
+
+        file.close();
+    }
+}
+
+nlohmann::json Utils::load_json(const std::string &file_path) {
+    std::ifstream file(file_path);
+    nlohmann::json json_content;
+
+    if (!file.is_open()) {
+        return {};
+    }
+
+    file >> json_content;
+
+    file.close();
+
+    return json_content;
+}
 
 double Utils::get_angle(const cv::Point &A, const cv::Point &B, const cv::Point &C) {
     // returns the angle ACB
@@ -196,7 +227,7 @@ bool Utils::approx_is_square(std::vector<cv::Point> &approx) {
 }
 
 bool Utils::in_range(const cv::Scalar &p, const cv::Scalar &start, const cv::Scalar &end) {
-    return (start[0] <= p[0] && p[0] <= end[0]) &&
+    return (start[0] <= p[2] && p[2] <= end[0]) &&
            (start[1] <= p[1] && p[1] <= end[1]) &&
-           (start[1] <= p[1] && p[1] <= end[0]);
+           (start[2] <= p[0] && p[0] <= end[2]);
 }

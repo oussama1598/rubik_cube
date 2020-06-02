@@ -2,10 +2,20 @@
 
 #include <utility>
 #include <vector>
+#include <fstream>
+#include <filesystem>
+
 #include <opencv2/opencv.hpp>
+#include <nlohmann/json.hpp>
 
 class Utils {
 public:
+    static bool file_exists(const std::string &file_path);
+
+    static void save_file(const std::string &file_path, nlohmann::json &json);
+
+    static nlohmann::json load_json(const std::string &file_path);
+
     static double get_angle(const cv::Point &A, const cv::Point &B, const cv::Point &C);
 
     static double pixel_distance(const cv::Point &A, const cv::Point &B);
