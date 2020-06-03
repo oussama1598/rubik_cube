@@ -1,0 +1,98 @@
+{
+   "blur_settings": {
+      "kernel_x": 15,
+      "kernel_y": 15,
+      "sigma_x": 2,
+      "sigma_y": 2
+   },
+   "canny_settings": {
+      "threshold1": 10,
+      "threshold2": 16
+   },
+   "colors": {
+      "Blue": [
+         [
+            0.0,
+            216.0,
+            230.0
+         ],
+         [
+            2.0,
+            247.0,
+            255.0
+         ]
+      ],
+      "Green": [
+         [
+            0.0,
+            172.0,
+            109.0
+         ],
+         [
+            2.0,
+            195.0,
+            168.0
+         ]
+      ],
+      "Orange": [
+         [
+            227.0,
+            189.0,
+            1.0
+         ],
+         [
+            255.0,
+            207.0,
+            4.0
+         ]
+      ],
+      "Red": [
+         [
+            255.0,
+            0.0,
+            0.0
+         ],
+         [
+            255.0,
+            0.0,
+            0.0
+         ]
+      ],
+      "White": [
+         [
+            231.0,
+            254.0,
+            231.0
+         ],
+         [
+            252.0,
+            256.0,
+            252.0
+         ]
+      ],
+      "Yellow": [
+         [
+            227.0,
+            254.0,
+            3.0
+         ],
+         [
+            250.0,
+            255.0,
+            159.0
+         ]
+      ]
+   },
+   "dilated_settings": {
+      "iterations": 4,
+      "kernel_x": 3,
+      "kernel_y": 3
+   },
+   "windows_states": {
+      "canny": false,
+      "dilated": false,
+      "gray": false,
+      "no_noise": false,
+      "output": true
+   }
+}

@@ -9,11 +9,13 @@ class Rubik_Detector {
 private:
     std::string _config_file{"config.json"};
 
-    std::map<std::string, bool> _windows_states{{"output",   true},
-                                                {"gray",     false},
-                                                {"no_noise", false},
-                                                {"canny",    false},
-                                                {"dilated",  false}};
+    std::map<std::string, bool> _windows_states{
+            {"output",   true},
+            {"gray",     false},
+            {"no_noise", false},
+            {"canny",    false},
+            {"dilated",  false}
+    };
 
     std::string _calibrate_color{""};
 

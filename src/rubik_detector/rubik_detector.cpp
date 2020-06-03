@@ -389,8 +389,13 @@ void Rubik_Detector::_analyze() {
             cv::Scalar color = cv::mean(_image, mask);
 
             if (!_calibrate_color.empty()) {
-                if (color[0] > _max[0] && color[1] > _max[1] && color[2] > _max[2]) _max = color;
-                if (color[0] < _min[0] && color[1] < _min[1] && color[2] < _min[2]) _min = color;
+                _min[0] = std::min(_min[0], color[0]);
+                _min[1] = std::min(_min[1], color[1]);
+                _min[2] = std::min(_min[2], color[2]);
+
+                _max[0] = std::max(_max[0], color[0]);
+                _max[1] = std::max(_max[1], color[1]);
+                _max[2] = std::max(_max[2], color[2]);
             }
 
             std::string color_name = _get_color_name(color);
