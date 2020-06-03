@@ -31,34 +31,39 @@ Rubik_Detector::Rubik_Detector() {
         cap >> _image;
 
         _analyze();
-        _draw_cube_face();
+        _draw_cube_face('U', 3);
+        _draw_cube_face('R', 0, 3);
+        _draw_cube_face('F', 3, 3);
+        _draw_cube_face('L', 3 * 2, 3);
+        _draw_cube_face('B', 3 * 3, 3);
+        _draw_cube_face('D', 3, 3 * 2);
 
         if (_windows_states.at("output")) {
-            cv::resize(_image, _image, cv::Size(), .6f, .6f);
+            cv::resize(_image, _image, cv::Size(), _resize_ratio, _resize_ratio);
             viewer.add_frame("Output", _image);
         }
 
         if (_windows_states.at("gray")) {
             cv::cvtColor(_gray, _gray, cv::COLOR_GRAY2RGB);
-            cv::resize(_gray, _gray, cv::Size(), .6f, .6f);
+            cv::resize(_gray, _gray, cv::Size(), _resize_ratio, _resize_ratio);
             viewer.add_frame("Gray", _gray);
         }
 
         if (_windows_states.at("no_noise")) {
             cv::cvtColor(_no_noise, _no_noise, cv::COLOR_GRAY2RGB);
-            cv::resize(_no_noise, _no_noise, cv::Size(), .6f, .6f);
+            cv::resize(_no_noise, _no_noise, cv::Size(), _resize_ratio, _resize_ratio);
             viewer.add_frame("No noise", _no_noise);
         }
 
         if (_windows_states.at("canny")) {
             cv::cvtColor(_canny, _canny, cv::COLOR_GRAY2RGB);
-            cv::resize(_canny, _canny, cv::Size(), .6f, .6f);
+            cv::resize(_canny, _canny, cv::Size(), _resize_ratio, _resize_ratio);
             viewer.add_frame("Canny", _canny);
         }
 
         if (_windows_states.at("dilated")) {
             cv::cvtColor(_dilated, _dilated, cv::COLOR_GRAY2RGB);
-            cv::resize(_dilated, _dilated, cv::Size(), .6f, .6f);
+            cv::resize(_dilated, _dilated, cv::Size(), _resize_ratio, _resize_ratio);
             viewer.add_frame("Dilated", _dilated);
         }
 
@@ -402,7 +407,7 @@ void Rubik_Detector::_analyze() {
 
             if (color_name.empty()) continue;
 
-            _data.at("U").at(i) = color_name;
+            _data.at(_current_face).at(i) = color_name;
 
             cv::putText(_image, _get_color_name(color), cv::Point(cont.get_cX(), cont.get_cY()),
                         cv::FONT_HERSHEY_PLAIN, .5f, _color_mapping.at(color_name));
@@ -416,14 +421,15 @@ void Rubik_Detector::_analyze() {
     }
 }
 
-void Rubik_Detector::_draw_cube_face() {
+void Rubik_Detector::_draw_cube_face(char face, int offset_x, int offset_y) {
     int size = 20;
 
     for (int y = 0; y < 3; ++y)
         for (int x = 0; x < 3; ++x) {
-            std::string color = _data.at("U").at(y * 3 + x);
+            std::string color = _data.at(face).at(y * 3 + x);
 
-            cv::Rect rect{x * size + 5 * (x + 1), y * size + 5 * (y + 1), size, size};
+            cv::Rect rect{x * size + 5 * (x + 1) + (offset_x * (size + 5)),
+                          y * size + 5 * (y + 1) + offset_y * (size + 5), size, size};
 
             cv::rectangle(
                     _image,

@@ -13,4 +13,6 @@ int main() {
 //    rubik_cube.start();
 
     Rubik_Detector rubik_detector;
+
+    std::cout << "ok" << std::endl;
 }

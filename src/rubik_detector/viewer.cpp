@@ -6,14 +6,20 @@ Viewer::Viewer(std::map<std::string, bool> *windows_states,
                std::map<std::string, int> *canny_settings,
                std::map<std::string, int> *dilated_settings,
                std::map<std::string, std::pair<cv::Scalar, cv::Scalar>> *color_ranges,
-               bool *save_settings)
+               std::unordered_map<char, std::array<std::string, 9>> *data,
+               char *current_face,
+               bool *save_settings,
+               float *resize_ratio)
         : _windows_states(windows_states),
           _calibrate_color(calibrate_color),
           _blur_settings(blur_settings),
           _canny_settings(canny_settings),
           _dilated_settings(dilated_settings),
           _color_ranges(color_ranges),
-          _save_settings(save_settings) {
+          _data(data),
+          _current_face(current_face),
+          _save_settings(save_settings),
+          _resize_ratio(resize_ratio) {
     glfwSetErrorCallback(_handle_errors);
 
     if (!glfwInit())
@@ -73,6 +79,78 @@ void Viewer::_build_gui() {
             ImGui::Checkbox("Dilated Image", &_windows_states->at("dilated"));
         }
 
+        if (ImGui::CollapsingHeader("Faces Data", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::Indent();
+
+            ImGui::Text("Current Face: %c", *_current_face);
+            ImGui::Spacing();
+            ImGui::Spacing();
+
+            for (auto &face: *_data) {
+                ImGui::Text("%c: ", face.first);
+
+                bool is_done{true};
+
+                for (auto &color: face.second) {
+                    if (color.empty()) is_done = false;
+                }
+
+                ImGui::SameLine();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(!is_done, is_done, 0, 1));
+                ImGui::Text("%s", is_done ? "Done" : "Not enough data");
+                ImGui::PopStyleColor();
+            }
+
+            ImGui::Spacing();
+            ImGui::Spacing();
+
+            ImGui::Unindent();
+
+            auto el = std::find(_faces.begin(), _faces.end(), *_current_face);
+            int index = std::distance(_faces.data(), el);
+
+            if (index >= 5) {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            }
+            if (ImGui::Button("Save Current Face")) {
+                *_current_face = _faces[index + 1];
+            }
+            if (index >= 5) {
+                ImGui::PopItemFlag();
+                ImGui::PopStyleVar();
+            }
+
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Reset Current Face")) {
+                _data->at(*_current_face) = {};
+            }
+
+            if (index == 0) {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            }
+            if (ImGui::Button("Reset Previous Face")) {
+                *_current_face = _faces[index - 1];
+            }
+            if (index == 0) {
+                ImGui::PopItemFlag();
+                ImGui::PopStyleVar();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Reset All")) {
+                for (auto &color: *_data) {
+                    _data->at(color.first) = {};
+                }
+
+                *_current_face = 'U';
+            }
+        }
+
         if (ImGui::CollapsingHeader("Calibrate", ImGuiTreeNodeFlags_DefaultOpen)) {
             if (!_calibrate_color->empty()) ImGui::Text("Currently Recording Face colors ...");
 
@@ -102,6 +180,11 @@ void Viewer::_build_gui() {
         }
 
         if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::Text("Image resize ratio");
+            ImGui::InputFloat("s", _resize_ratio, .1f);
+
+            *_resize_ratio = std::clamp(*_resize_ratio, .1f, 1.5f);
+
             if (ImGui::TreeNode("Gaussian Blur")) {
                 ImGui::Text("Kernel Size x");
                 ImGui::InputInt("kx", &_blur_settings->at("kernel_x"), 2);

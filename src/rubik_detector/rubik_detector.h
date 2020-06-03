@@ -17,8 +17,6 @@ private:
             {"dilated",  false}
     };
 
-    std::string _calibrate_color{""};
-
     std::map<std::string, int> _blur_settings{
             {"kernel_x", 15},
             {"kernel_y", 15},
@@ -88,6 +86,8 @@ private:
 
     bool _save_settings{false};
 
+    float _resize_ratio{.6f};
+
     cv::Mat _image;
     cv::Mat _gray;
     cv::Mat _no_noise;
@@ -105,12 +105,22 @@ private:
     int _bottom{-1};
     int _left{-1};
     int _right{-1};
-    std::map<std::string, std::array<std::string, 9>> _data{
-            {"U", {}},
+
+    std::unordered_map<char, std::array<std::string, 9>> _data{
+            {'U', {}},
+            {'R', {}},
+            {'F', {}},
+            {'L', {}},
+            {'B', {}},
+            {'D', {}}
     };
 
+    std::string _calibrate_color{""};
+    char _current_face{'U'};
+
     Viewer viewer{&_windows_states, &_calibrate_color, &_blur_settings, &_canny_settings,
-                  &_dilated_settings, &_color_ranges, &_save_settings};
+                  &_dilated_settings, &_color_ranges, &_data, &_current_face, &_save_settings,
+                  &_resize_ratio};
 
 private:
     void _dump_settings();
@@ -144,7 +154,7 @@ private:
 
     void _analyze();
 
-    void _draw_cube_face();
+    void _draw_cube_face(char face, int offset_x = 0, int offset_y = 0);
 
 public:
 

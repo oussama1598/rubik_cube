@@ -32,9 +32,15 @@ private:
     std::map<std::string, int> *_canny_settings;
     std::map<std::string, int> *_dilated_settings;
     std::map<std::string, std::pair<cv::Scalar, cv::Scalar>> *_color_ranges;
+    std::unordered_map<char, std::array<std::string, 9>> *_data;
+
+    char *_current_face;
     bool *_save_settings;
+    float *_resize_ratio;
 
     std::string _c_color{"White"};
+
+    std::array<char, 6> _faces{'U', 'R', 'F', 'L', 'B', 'D'};
 
 private:
     static void _handle_errors(int, const char *description);
@@ -50,7 +56,10 @@ public:
            std::map<std::string, int> *canny_settings,
            std::map<std::string, int> *dilated_settings,
            std::map<std::string, std::pair<cv::Scalar, cv::Scalar>> *color_ranges,
-           bool *save_settings);
+           std::unordered_map<char, std::array<std::string, 9>> *data,
+           char *current_face,
+           bool *save_settings,
+           float *resize_ratio);
 
     [[nodiscard]] bool is_running() const { return !glfwWindowShouldClose(_window); }
 
